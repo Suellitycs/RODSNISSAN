@@ -341,33 +341,56 @@
         }
 
         function renderChart(diario) {
-            const ctx = document.getElementById('chartMain').getContext('2d');
-            if(myChart) myChart.destroy();
-            const labels = Object.keys(diario).sort((a,b)=>parseInt(a)-parseInt(b));
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(195, 0, 47, 0.4)');
-            gradient.addColorStop(1, 'rgba(195, 0, 47, 0)');
+    const ctx = document.getElementById('chartMain').getContext('2d');
+    if(myChart) myChart.destroy();
 
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: labels.map(l => diario[l]),
-                        borderColor: '#c3002f', backgroundColor: gradient,
-                        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } }
+    // 1. Criar eixo X contínuo (ex: 1 a 31) baseado no mês selecionado
+    const fM = document.getElementById("f-mes").value;
+    const fA = document.getElementById("f-ano").value;
+    const diasNoMes = (fM === "TODOS" || fA === "TODOS") ? 31 : new Date(fA, parseInt(fM) + 1, 0).getDate();
+    
+    const labels = Array.from({length: diasNoMes}, (_, i) => (i + 1).toString().padStart(2, '0'));
+    
+    // 2. Mapear dados para os dias (garantindo 0 onde não há registro)
+    const dataPoints = labels.map(dia => diario[dia] || 0);
+
+    myChart = new Chart(ctx, {
+        type: 'bar', // Mudamos para BARRA para representar volume
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Volume Aprovado',
+                data: dataPoints,
+                backgroundColor: '#c3002f',
+                borderRadius: 2,
+                hoverBackgroundColor: '#ff4d79',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `R$ ${context.raw.toLocaleString('pt-BR')}`
                     }
                 }
-            });
+            },
+            scales: { 
+                y: { 
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                    ticks: { color: '#666', font: { size: 9 }, callback: (v) => 'R$ ' + v/1000 + 'k' }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: '#666', font: { size: 9 }, maxRotation: 0 }
+                }
+            }
         }
+    });
+}
 
         function switchTab(t) {
             document.getElementById('tab-dash').classList.toggle('hidden', t !== 'dash');
