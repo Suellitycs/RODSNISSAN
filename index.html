@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>RODS NISSAN | ULTRA v4.8.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --nissan-red: #c3002f;
+            --panel-bg: rgba(15, 15, 18, 0.85);
+        }
+
+        body { 
+            background: radial-gradient(circle at top center, #1a080a 0%, #050505 100%); 
+            color: #e2e8f0; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        body::after {
+            content: " ";
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+            background-size: 100% 4px;
+            z-index: 10001;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* --- VINHETA REFINADA --- */
+        #intro-rods { 
+            position: fixed; 
+            inset: 0; 
+            background: radial-gradient(circle, #0a0a0a 0%, #000 100%); 
+            z-index: 9999; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            animation: fadeOut 1s cubic-bezier(0.4, 0, 0.2, 1) forwards 3.5s; 
+        }
+        .intro-logo-img {
+            width: 420px;
+            filter: drop-shadow(0 0 30px rgba(195, 0, 47, 0.4));
+            animation: logoEntrance 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .loading-bar-container {
+            width: 280px; height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; overflow: hidden;
+            position: relative; margin-top: 2.5rem;
+        }
+        .loading-bar-fill {
+            position: absolute; height: 100%; width: 0%;
+            background: linear-gradient(90deg, transparent, #c3002f, #ff4d79);
+            box-shadow: 0 0 15px #c3002f;
+            animation: loadingProgress 3s cubic-bezier(0.5, 0, 0.5, 1) forwards;
+        }
+        .status-text {
+            font-size: 9px; letter-spacing: 0.8em; color: #444; font-weight: 900;
+            text-transform: uppercase; margin-top: 15px; animation: textPulse 1.5s infinite;
+        }
+        @keyframes logoEntrance {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; filter: brightness(0) blur(20px); }
+            100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1) blur(0px); }
+        }
+        @keyframes loadingProgress { 0% { width: 0%; left: -100%; } 100% { width: 100%; left: 0%; } }
+        @keyframes textPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+        .nissan-red { color: var(--nissan-red); }
+        .bg-nissan-red { background-color: var(--nissan-red); }
+        
+        .panel { 
+            background: var(--panel-bg); border: 1px solid rgba(195, 0, 47, 0.2); 
+            border-radius: 6px; display: flex; flex-direction: column; 
+            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        .panel:hover { border-color: rgba(195, 0, 47, 0.5); box-shadow: 0 0 20px rgba(195, 0, 47, 0.1); }
+
+        .font-rods { font-family: 'Audiowide', cursive; }
+        .tab-active { border-bottom: 3px solid var(--nissan-red); color: white; font-weight: 900; text-shadow: 0 0 10px rgba(195, 0, 47, 0.5); }
+        .scroll-area { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--nissan-red) #0d0d0f; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--nissan-red); }
+        
+        .rods-tip { 
+            position: fixed; background: rgba(10, 10, 12, 0.95); border: 1px solid var(--nissan-red); 
+            padding: 12px; border-radius: 4px; font-size: 11px; z-index: 10000; 
+            display: none; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            color: #fff; border-left: 5px solid var(--nissan-red); backdrop-filter: blur(5px);
+        }
+        .kpi-card { position: relative; overflow: hidden; }
+        .kpi-card::before {
+            content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+        }
+        .kpi-card:hover::before { left: 100%; }
+    </style>
+</head>
+<body class="p-4">
+
+    <div id="intro-rods">
+        <img src="RODS.jpg" class="intro-logo-img" alt="RODS NISSAN">
+        <div class="loading-bar-container">
+            <div class="loading-bar-fill"></div>
+        </div>
+        <p class="status-text">Iniciando Protocolo de Inteligência</p>
+    </div>
+
+    <div id="master-tip" class="rods-tip"></div>
+
+    <header class="flex justify-between items-center mb-4 border-b border-white/5 pb-3 shrink-0">
+        <div class="flex items-center gap-5">
+            <img src="RODS.jpg" class="h-12 w-auto filter drop-shadow(0 0 5px rgba(195, 0, 47, 0.3))" alt="Logo">
+            <div class="h-8 w-[1px] bg-gray-800 mx-2"></div>
+            <div>
+                <h1 class="text-xl font-black italic uppercase tracking-tighter leading-none">RODS <span class="nissan-red">NISSAN</span></h1>
+                <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.4em] mt-1">IMBIRIBEIRA | Decision Intelligence</p>
+            </div>
+        </div>
+        <div class="flex gap-3 items-center">
+            <div class="flex bg-black/40 p-1 rounded-md border border-white/5 shadow-inner">
+                <select id="f-ano" onchange="updateUI()" class="bg-transparent text-white px-3 py-1 rounded text-[10px] font-black uppercase outline-none cursor-pointer hover:text-nissan-red transition-colors"></select>
+                <select id="f-mes" onchange="updateUI()" class="bg-transparent text-white px-3 py-1 rounded text-[10px] font-black uppercase outline-none cursor-pointer hover:text-nissan-red transition-colors"></select>
+            </div>
+            <input type="text" id="search-input" oninput="updateUI()" placeholder="BUSCAR PLACA OU CONSULTOR..." class="bg-black/40 border border-white/10 text-white px-4 py-1.5 rounded text-[10px] w-56 outline-none focus:border-nissan-red transition-all placeholder:text-gray-700 font-bold">
+            <span id="live-clock" class="text-nissan-red font-mono text-[10px] ml-2 font-black italic bg-nissan-red/10 px-3 py-1 rounded border border-nissan-red/20 shadow-[0_0_15px_rgba(195,0,47,0.1)]"></span>
+        </div>
+    </header>
+
+    <nav class="flex gap-10 mb-4 border-b border-white/5 shrink-0">
+        <button onclick="switchTab('dash')" id="btn-dash" class="pb-2 tab-active uppercase text-[11px] tracking-[0.2em] transition-all">01. Cockpit de Performance</button>
+        <button onclick="switchTab('oper')" id="btn-oper" class="pb-2 text-gray-500 uppercase text-[11px] tracking-[0.2em] transition-all hover:text-gray-300">02. Fluxo Operacional</button>
+    </nav>
+
+    <main class="flex-grow overflow-hidden flex flex-col">
+        <div id="tab-dash" class="grid grid-cols-12 gap-4 h-full pb-2">
+            <div class="col-span-12 grid grid-cols-4 gap-4 h-24">
+                <div class="panel kpi-card p-4 border-t-2 border-t-gray-500 flex justify-center items-center" onmousemove="showTip(event, '<b>VOLUME ORÇADO</b><br>Total bruto de oportunidades geradas.')" onmouseout="hideTip()">
+                    <div class="text-center">
+                        <p class="text-[9px] text-gray-500 font-black uppercase mb-1 tracking-widest">Volume Orçado</p>
+                        <p id="k-orc" class="text-2xl font-black italic text-white tracking-tighter">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="panel kpi-card p-4 border-t-2 border-t-emerald-500 flex justify-center items-center" onmousemove="showTip(event, '<b>REALIZADO (APROVADO)</b><br>Receita efetiva.')" onmouseout="hideTip()">
+                    <div class="text-center">
+                        <p class="text-[9px] text-emerald-500/70 font-black uppercase mb-1 tracking-widest">Faturamento Realizado</p>
+                        <p id="k-apr" class="text-2xl font-black text-emerald-400 italic tracking-tighter">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="panel kpi-card p-4 border-t-2 border-t-amber-500 flex justify-center items-center" onmousemove="showTip(event, '<b>GARGALO (PENDENTE)</b><br>Valores aguardando retorno.')" onmouseout="hideTip()">
+                    <div class="text-center">
+                        <p class="text-[9px] text-amber-500/70 font-black uppercase mb-1 tracking-widest">Gargalo (Pendente)</p>
+                        <p id="k-pen" class="text-2xl font-black text-amber-400 italic tracking-tighter">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="panel kpi-card p-4 border-t-2 border-t-nissan-red flex justify-center items-center" onmousemove="showTip(event, '<b>TAXA DE CONVERSÃO</b><br>Eficiência de fechamento.')" onmouseout="hideTip()">
+                    <div class="text-center">
+                        <p class="text-[9px] text-nissan-red/70 font-black uppercase mb-1 tracking-widest">Conversão</p>
+                        <p id="k-tax" class="text-2xl font-black text-white italic tracking-tighter">0%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-3 panel p-5 h-[calc(100%-7rem)]">
+                <h3 class="text-[11px] font-black nissan-red uppercase mb-4 italic tracking-[0.2em] border-l-2 border-nissan-red pl-3">Top Causas de Perda</h3>
+                <div id="cause-root" class="space-y-5 flex-grow scroll-area pr-2"></div>
+                <div class="mt-4 pt-4 border-t border-white/5">
+                    <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Ticket Médio Loja</p>
+                    <p id="k-ticket" class="text-2xl font-black text-white italic tracking-tighter">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="col-span-6 panel p-5 h-[calc(100%-7rem)]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase italic tracking-[0.2em]">Performance Operacional (Volume Diário)</h3>
+                    <div class="h-2 w-2 rounded-full bg-nissan-red animate-ping"></div>
+                </div>
+                <div class="flex-grow w-full relative">
+                    <canvas id="chartMain"></canvas>
+                </div>
+            </div>
+
+            <div class="col-span-3 panel p-5 h-[calc(100%-7rem)]">
+                <div class="h-1/2 flex flex-col mb-4">
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase mb-3 border-b border-white/5 pb-2 italic tracking-widest">Ranking Consultores</h3>
+                    <div id="rank-cons" class="scroll-area flex-grow pr-1"></div>
+                </div>
+                <div class="h-1/2 flex flex-col">
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase mb-3 border-b border-white/5 pb-2 italic tracking-widest">Top Mecânicos</h3>
+                    <div id="rank-prod" class="scroll-area flex-grow pr-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-oper" class="hidden h-full">
+            <div class="panel h-full overflow-hidden flex flex-col">
+                <div class="scroll-area flex-grow">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="text-[9px] text-gray-500 border-b border-white/10 sticky top-0 bg-[#0d0d0f] z-10 uppercase font-black">
+                            <tr>
+                                <th class="p-4">Data</th>
+                                <th class="p-4">Consultor</th>
+                                <th class="p-4">Mecânico</th>
+                                <th class="p-4">Placa</th>
+                                <th class="p-4 text-right">Orçado</th>
+                                <th class="p-4 text-right">Aprovado</th>
+                                <th class="p-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-body" class="divide-y divide-white/5"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-2 flex justify-between text-[9px] text-gray-700 font-mono border-t border-white/5 pt-2 italic shrink-0">
+        <p class="tracking-widest">SUELLY MARIA — DATA SCIENTIST | LEAD ENGINEER</p>
+        <p class="nissan-red animate-pulse">● CORE SYSTEM ACTIVE</p>
+        <p>DATABASE: CLOUD SYNC ACTIVE</p>
+    </footer>
+
+    <script>
+        const SHEET_ID = "1ACPg7uMpGYZvCICI0jIT75-VAzf3QcWRUBoJO_NiuKc";
+        let googleData = [];
+        let myChart = null;
+
+        function showTip(e, txt) {
+            const tip = document.getElementById("master-tip");
+            tip.innerHTML = txt; tip.style.display = "block";
+            tip.style.left = (e.clientX + 15) + "px"; tip.style.top = (e.clientY + 15) + "px";
+        }
+        function hideTip() { document.getElementById("master-tip").style.display = "none"; }
+
+        function googleCallback(response) {
+            googleData = response.table.rows;
+            initDateFilters();
+            updateUI();
+        }
+
+        function initDateFilters() {
+            const fA = document.getElementById('f-ano'), fM = document.getElementById('f-mes');
+            if(fA.options.length > 0) return;
+            const curY = new Date().getFullYear();
+            
+            fA.add(new Option("TODOS ANOS", "TODOS"));
+            [curY, curY-1].forEach(y => fA.add(new Option(y, y)));
+            fA.value = "TODOS"; 
+
+            const meses = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+            fM.add(new Option("TODOS MESES", "TODOS"));
+            meses.forEach((m, i) => fM.add(new Option(m, i)));
+            fM.value = "TODOS"; 
+        }
+
+        function updateUI() {
+            const fA = document.getElementById("f-ano").value, fM = document.getElementById("f-mes").value;
+            const search = document.getElementById("search-input").value.toUpperCase();
+            let stats = { orc: 0, apr: 0, pen: 0, causes: {}, cons: {}, prod: {}, diario: {} };
+            let tHtml = "";
+
+            googleData.forEach(r => {
+                const c = r.c;
+                if(!c || !(c[17]?.v || "").toUpperCase().includes("IMBIRIBEIRA")) return;
+                const dRaw = c[0]?.f || "", co = (c[2]?.v || "N/A").toUpperCase(), me = (c[7]?.v || "N/A").toUpperCase();
+                const pl = (c[4]?.v || "---").toUpperCase(), vO = parseFloat(c[10]?.v) || 0, vA = parseFloat(c[11]?.v) || 0;
+                const st = (c[12]?.v || "").toUpperCase();
+                const cau = c[16]?.v || "MOTIVO NÃO CADASTRADO";
+
+                let match = true;
+                if(dRaw.includes('/')) {
+                    const p = dRaw.split('/');
+                    if(fA !== "TODOS" && p[2] != fA) match = false;
+                    if(fM !== "TODOS" && (parseInt(p[1])-1) != fM) match = false;
+                    if(match) stats.diario[p[0]] = (stats.diario[p[0]] || 0) + vA;
+                }
+                if(search && !co.includes(search) && !pl.includes(search)) match = false;
+
+                if(match) {
+                    stats.orc += vO; stats.apr += vA;
+                    if(st.includes("PENDENTE")) stats.pen += vO;
+                    if(st === 'NÃO' || st === 'NAO') stats.causes[cau] = (stats.causes[cau] || 0) + vO;
+                    stats.cons[co] = (stats.cons[co] || 0) + vA;
+                    stats.prod[me] = (stats.prod[me] || 0) + vA;
+                    
+                    const stColor = (st === 'S' || st === 'SIM') ? 'text-emerald-500' : (st.includes('PENDENTE') ? 'text-amber-500' : 'text-nissan-red');
+                    let tipAction = (st === 'NÃO' || st === 'NAO' || st.includes('PENDENTE')) ? `onmousemove="showTip(event, '<b class=\'nissan-red\'>JUSTIFICATIVA:</b><br>${cau.replace(/'/g, "\\'")}')" onmouseout="hideTip()"` : "";
+
+                    tHtml += `<tr class="hover:bg-white/5 border-b border-white/5 transition-colors" ${tipAction}>
+                        <td class="p-4 text-gray-500 font-mono">${dRaw}</td>
+                        <td class="p-4 font-bold text-gray-300">${co}</td>
+                        <td class="p-4 text-gray-400">${me}</td>
+                        <td class="p-4 font-mono">${pl}</td>
+                        <td class="p-4 text-right">R$ ${vO.toLocaleString('pt-BR')}</td>
+                        <td class="p-4 text-right text-emerald-400 font-black">R$ ${vA.toLocaleString('pt-BR')}</td>
+                        <td class="p-4 text-center"><span class="${stColor} font-black">${st}</span></td>
+                    </tr>`;
+                }
+            });
+
+            document.getElementById("k-orc").innerText = stats.orc.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById("k-apr").innerText = stats.apr.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById("k-pen").innerText = stats.pen.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById("k-tax").innerText = (stats.orc > 0 ? (stats.apr/stats.orc)*100 : 0).toFixed(1) + "%";
+            document.getElementById("k-ticket").innerText = (stats.apr / (Object.keys(stats.cons).length || 1)).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById("tb-body").innerHTML = tHtml;
+
+            document.getElementById("cause-root").innerHTML = Object.entries(stats.causes).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v]) => `
+                <div class="cursor-help" onmousemove="showTip(event, '<b>MOTIVO:</b> ${n}<br><b>VALOR:</b> R$ ${v.toLocaleString('pt-BR')}')" onmouseout="hideTip()">
+                    <div class="flex justify-between text-[9px] text-gray-500 mb-1 font-black uppercase tracking-tighter">
+                        <span class="truncate w-32">${n}</span>
+                        <span>R$ ${v.toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden shadow-inner">
+                        <div class="h-full bg-nissan-red shadow-[0_0_10px_rgba(195,0,47,0.5)]" style="width: ${(v/stats.orc)*100}%"></div>
+                    </div>
+                </div>`).join('');
+
+            const rHtml = (data) => Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v]) => `
+                <div class="flex justify-between py-2 border-b border-white/5 text-[11px] group hover:bg-white/5 px-2 rounded-sm transition-all">
+                    <span class="text-gray-400 uppercase font-bold truncate w-24 group-hover:text-white">${n}</span>
+                    <span class="font-black text-white group-hover:text-nissan-red">R$ ${v.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</span>
+                </div>`).join('');
+            document.getElementById("rank-cons").innerHTML = rHtml(stats.cons);
+            document.getElementById("rank-prod").innerHTML = rHtml(stats.prod);
+
+            renderChart(stats.diario);
+        }
+
+        function renderChart(diario) {
+            const ctx = document.getElementById('chartMain').getContext('2d');
+            if(myChart) myChart.destroy();
+            const labels = Object.keys(diario).sort((a,b)=>parseInt(a)-parseInt(b));
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(195, 0, 47, 0.4)');
+            gradient.addColorStop(1, 'rgba(195, 0, 47, 0)');
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: labels.map(l => diario[l]),
+                        borderColor: '#c3002f', backgroundColor: gradient,
+                        fill: true, tension: 0.4, borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#666', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function switchTab(t) {
+            document.getElementById('tab-dash').classList.toggle('hidden', t !== 'dash');
+            document.getElementById('tab-oper').classList.toggle('hidden', t !== 'oper');
+            document.getElementById('btn-dash').className = t === 'dash' ? 'pb-2 tab-active uppercase text-[11px] tracking-[0.2em] transition-all' : 'pb-2 text-gray-500 uppercase text-[11px] tracking-[0.2em] transition-all hover:text-gray-300';
+            document.getElementById('btn-oper').className = t === 'oper' ? 'pb-2 tab-active uppercase text-[11px] tracking-[0.2em] transition-all' : 'pb-2 text-gray-500 uppercase text-[11px] tracking-[0.2em] transition-all hover:text-gray-300';
+        }
+
+        function refresh() {
+            const script = document.createElement("script");
+            script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:googleCallback&ts=${Date.now()}`;
+            document.body.appendChild(script);
+        }
+
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString('pt-BR'); }, 1000);
+        refresh();
+        setInterval(refresh, 60000);
+    </script>
+</body>
+</html>
