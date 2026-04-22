@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RODS NISSAN | COMMAND CENTER</title>
-    <link rel="icon" type="image/jpg" href="https://postimg.cc">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/026mS8m0/image-53e4e8.png">
     
-    <script src="https://tailwindcss.com"></script>
-    <script src="https://jsdelivr.net"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://googleapis.com');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         :root {
             --nissan-red: #c3002f;
@@ -23,6 +23,7 @@
             margin: 0; padding: 16px;
         }
 
+        /* Overlay de scanlines para look tecnológico */
         body::after {
             content: " "; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
@@ -34,11 +35,13 @@
             z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; 
             animation: fadeOut 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards 3.5s; 
         }
+        
         .logo-rods-vignette {
-            width: 320px; height: auto;
+            width: 280px; height: auto;
             filter: drop-shadow(0 0 30px rgba(195, 0, 47, 0.4));
             animation: logoEntrance 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+
         @keyframes logoEntrance {
             0% { transform: scale(0.9) translateY(20px); opacity: 0; filter: brightness(0) blur(20px); }
             100% { transform: scale(1) translateY(0); opacity: 1; filter: brightness(1) blur(0px); }
@@ -75,7 +78,7 @@
 <body onload="startTime()">
 
     <div id="intro-rods">
-        <img src="https://postimg.cc" alt="RODS Logo" class="logo-rods-vignette">
+        <img src="https://i.postimg.cc/026mS8m0/image-53e4e8.png" alt="RODS Logo" class="logo-rods-vignette">
         <div class="w-[280px] h-[2px] bg-white/5 rounded-full mt-10 relative overflow-hidden">
             <div class="loading-bar-fill"></div>
         </div>
@@ -86,11 +89,11 @@
 
     <header class="flex justify-between items-center mb-4 border-b border-white/10 pb-4 shrink-0">
         <div class="flex items-center gap-4">
-            <img src="https://postimg.cc" alt="Logo" class="h-12 w-auto filter drop-shadow(0 0 5px rgba(195,0,47,0.3))">
+            <img src="https://i.postimg.cc/026mS8m0/image-53e4e8.png" alt="Logo" class="h-10 w-auto filter drop-shadow(0 0 5px rgba(195,0,47,0.3))">
             <div class="h-8 w-[1px] bg-gray-800 mx-2"></div>
             <div>
                 <h1 class="text-xl font-black italic uppercase tracking-tighter leading-none">RODS <span class="text-[#c3002f]">NISSAN</span></h1>
-                <p class="text-[8px] text-gray-500 font-bold uppercase tracking-[0.3em] mt-1">IMBIRIBEIRA | Decision Intelligence</p>
+                <p class="text-[8px] text-gray-500 font-bold uppercase tracking-[0.3em] mt-1"> Decision Intelligence</p>
             </div>
         </div>
         
@@ -98,7 +101,6 @@
             <div class="flex bg-black/60 p-1 rounded border border-white/10 shadow-inner">
                 <select id="f-ano" onchange="updateUI()" class="bg-transparent text-white px-2 py-1 text-[10px] font-black uppercase outline-none cursor-pointer hover:text-[#c3002f] transition-colors"></select>
                 <select id="f-mes" onchange="updateUI()" class="bg-transparent text-white px-2 py-1 text-[10px] font-black uppercase outline-none cursor-pointer hover:text-[#c3002f] transition-colors"></select>
-                <!-- NOVOS FILTROS SOLICITADOS -->
                 <select id="f-cons" onchange="updateUI()" class="bg-transparent text-white px-2 py-1 text-[10px] font-black uppercase outline-none cursor-pointer hover:text-[#c3002f] transition-colors border-l border-white/10">
                     <option value="TODOS">CONSULTORES</option>
                 </select>
@@ -106,7 +108,7 @@
                     <option value="TODOS">MECÂNICOS</option>
                 </select>
                 <select id="f-status" onchange="updateUI()" class="bg-transparent text-[#c3002f] px-3 py-1 text-[10px] font-black outline-none cursor-pointer border-l border-white/10 uppercase">
-                    <option value="TODOS">TODOS STATUS</option>
+                    <option value="TODOS">STATUS</option>
                     <option value="APROVADO">ACEITO</option>
                     <option value="PENDENTE">PENDENTE</option>
                     <option value="REJEITADO">REJEITADO</option>
@@ -127,19 +129,19 @@
     <main class="flex-grow overflow-hidden flex flex-col">
         <div id="tab-dash" class="grid grid-cols-12 gap-4 h-full">
             <div class="col-span-12 grid grid-cols-4 gap-4 h-20">
-                <div class="panel justify-center px-6 border-l-4 border-gray-600" onmousemove="showTip(event, '<b>VOLUME BRUTO</b><br>Total de orçamentos gerados no período.')" onmouseout="hideTip()">
+                <div class="panel justify-center px-6 border-l-4 border-gray-600">
                     <p class="text-[8px] uppercase text-gray-500 font-bold">Volume Total O.S</p>
                     <p id="k-orc" class="text-xl font-black italic">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-emerald-500" onmousemove="showTip(event, '<b>FATURAMENTO REAL</b><br>Orçamentos com status Aprovado.')" onmouseout="hideTip()">
+                <div class="panel justify-center px-6 border-l-4 border-emerald-500">
                     <p class="text-[8px] uppercase text-emerald-500 font-bold">Orçamentos Aceitos</p>
                     <p id="k-apr" class="text-xl font-black italic text-emerald-400">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-amber-500" onmousemove="showTip(event, '<b>GARGALOS</b><br>Valores aguardando decisão do cliente.')" onmouseout="hideTip()">
+                <div class="panel justify-center px-6 border-l-4 border-amber-500">
                     <p class="text-[8px] uppercase text-amber-500 font-bold">Capital Pendente</p>
                     <p id="k-pen" class="text-xl font-black italic text-amber-400">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-[#c3002f]" onmousemove="showTip(event, '<b>EFICIÊNCIA</b><br>Percentual de conversão Aprovados/Total.')" onmouseout="hideTip()">
+                <div class="panel justify-center px-6 border-l-4 border-[#c3002f]">
                     <p class="text-[8px] uppercase text-red-500 font-bold">Taxa de Conversão</p>
                     <p id="k-tax" class="text-xl font-black italic">0%</p>
                 </div>
@@ -149,7 +151,8 @@
                 <h3 class="text-[10px] font-black text-[#c3002f] uppercase mb-4 italic flex items-center gap-2">
                     <span class="w-2 h-2 bg-[#c3002f] rounded-full"></span> Status de Conversão
                 </h3>
-                <div class="h-28 mb-4"><canvas id="chartPie"></canvas></div>
+                <div class="h-24 mb-4"><canvas id="chartPie"></canvas></div>
+                
                 <h3 class="text-[9px] font-black text-gray-500 uppercase mb-3 italic border-t border-white/5 pt-3 tracking-widest">Objeções de Venda:</h3>
                 <div id="cause-root" class="scroll-area flex-grow pr-1"></div>
             </div>
@@ -193,9 +196,9 @@
     </main>
 
     <footer class="mt-4 flex justify-between text-[9px] text-gray-700 font-mono border-t border-white/5 pt-3 italic">
-        <p>DATA SCIENTIST: SUELLY MARIA</p>
+        <p>DATA SCIENTIST|SOFTWERE ESPECIALIST: SUELLY MARIA</p>
         <p class="text-[#c3002f] font-black animate-pulse uppercase">● TRANSMISSÃO EM TEMPO REAL ATIVA</p>
-        <p>© 2026 RODS ANALYTICS V3.5 | IMBIRIBEIRA</p>
+        <p>© 2026 RODS ANALYTICS | IMBIRIBEIRA</p>
     </footer>
 
     <script>
@@ -228,7 +231,7 @@
 
         function refresh() {
             const script = document.createElement("script");
-            script.src = `https://google.com{SHEET_ID}/gviz/tq?tqx=responseHandler:googleCallback&ts=${Date.now()}`;
+            script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:googleCallback&ts=${Date.now()}`;
             document.body.appendChild(script);
         }
 
@@ -239,28 +242,19 @@
         }
 
         function populateDynamicFilters() {
-            const selC = document.getElementById("f-cons");
-            const selM = document.getElementById("f-mecan");
-            
-            let consultores = new Set();
-            let mecanicos = new Set();
-
+            const selC = document.getElementById("f-cons"), selM = document.getElementById("f-mecan");
+            let consultores = new Set(), mecanicos = new Set();
             googleData.forEach(r => {
                 const c = r.c; if(!c) return;
                 if(c[1]?.v) consultores.add(c[1].v.toUpperCase());
                 if(c[4]?.v) mecanicos.add(c[4].v.toUpperCase());
             });
-
-            const currentC = selC.value;
-            const currentM = selM.value;
-
+            const currentC = selC.value, currentM = selM.value;
             selC.innerHTML = '<option value="TODOS">CONSULTORES</option>';
             Array.from(consultores).sort().forEach(name => selC.add(new Option(name, name)));
             selM.innerHTML = '<option value="TODOS">MECÂNICOS</option>';
             Array.from(mecanicos).sort().forEach(name => selM.add(new Option(name, name)));
-
-            selC.value = currentC;
-            selM.value = currentM;
+            selC.value = currentC; selM.value = currentM;
         }
 
         function parseCurrency(val) {
@@ -300,12 +294,7 @@
                     if(fM !== "TODOS" && (parseInt(parts[1])-1) != fM) dateMatch = false;
                 }
 
-                // FILTRAGEM MULTI-NÍVEL
-                const statusMatch = (fS === "TODOS" || statusFinal === fS);
-                const consMatch = (fC === "TODOS" || consultor === fC);
-                const mecMatch = (fMe === "TODOS" || mecanico === fMe);
-
-                if(dateMatch && statusMatch && consMatch && mecMatch) {
+                if(dateMatch && (fS === "TODOS" || statusFinal === fS) && (fC === "TODOS" || consultor === fC) && (fMe === "TODOS" || mecanico === fMe)) {
                     if(desc.includes("TOTAL ACUMULADO")) {
                         stats.orc += vTotal;
                         if(statusFinal === "APROVADO") stats.apr += vTotal;
@@ -316,11 +305,9 @@
                         }
                         stats.cons[consultor] = (stats.cons[consultor] || 0) + vTotal;
                         stats.prod[mecanico] = (stats.prod[mecanico] || 0) + vTotal;
-                        
                         const dia = dRaw.split('/')[0];
                         stats.diario[dia] = (stats.diario[dia] || 0) + vTotal;
                     }
-
                     const stColor = statusFinal === 'APROVADO' ? 'text-emerald-500' : (statusFinal === 'PENDENTE' ? 'text-amber-500' : 'text-red-600');
                     tHtml += `<tr class="hover:bg-white/5 transition-colors" onmousemove="showTip(event, '<b>JUSTIFICATIVA:</b><br>${mot}')" onmouseout="hideTip()">
                         <td class="p-4 font-mono">${dRaw.split(' ')[0]}</td>
@@ -348,7 +335,8 @@
             document.getElementById("rank-cons").innerHTML = renderRank(stats.cons);
             document.getElementById("rank-prod").innerHTML = renderRank(stats.prod);
             
-            document.getElementById("cause-root").innerHTML = Object.entries(stats.causes).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([n,v]) => `
+            // Renderização das Objeções - Ajustado para mostrar mais itens e scroll suave
+            document.getElementById("cause-root").innerHTML = Object.entries(stats.causes).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v]) => `
                 <div class="mb-3 cursor-help" onmousemove="showTip(event, '<b>MOTIVO:</b> ${n}<br>Perda: R$ ${v.toLocaleString('pt-BR')}')" onmouseout="hideTip()">
                     <div class="flex justify-between text-[8px] font-bold mb-1"><span class="text-gray-400 uppercase truncate w-40">${n}</span><span class="text-white">${((v/(stats.rej||1))*100).toFixed(0)}%</span></div>
                     <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-[#c3002f] shadow-[0_0_5px_#c3002f]" style="width: ${(v/(stats.rej||1))*100}%"></div></div>
@@ -377,7 +365,12 @@
                     labels: ['Aceito', 'Pendente', 'Rejeitado'],
                     datasets: [{ data: [stats.apr, stats.pen, stats.rej], backgroundColor: ['#10b981', '#f59e0b', '#c3002f'], borderWidth: 0, hoverOffset: 4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '82%', plugins: { legend: { display: false } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '75%', // Aumentado um pouco para a "bola" ficar mais elegante e menor
+                    plugins: { legend: { display: false } } 
+                }
             });
         }
 
