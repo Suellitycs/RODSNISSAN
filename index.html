@@ -23,7 +23,6 @@
             margin: 0; padding: 16px;
         }
 
-        /* Overlay de scanlines para look tecnológico */
         body::after {
             content: " "; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
@@ -129,19 +128,23 @@
     <main class="flex-grow overflow-hidden flex flex-col">
         <div id="tab-dash" class="grid grid-cols-12 gap-4 h-full">
             <div class="col-span-12 grid grid-cols-4 gap-4 h-20">
-                <div class="panel justify-center px-6 border-l-4 border-gray-600">
+                <div class="panel justify-center px-6 border-l-4 border-gray-600 cursor-help" 
+                     onmousemove="showTip(event, '<b>VOLUME BRUTO</b><br>Soma total de orçamentos gerados (Acumulado).')" onmouseout="hideTip()">
                     <p class="text-[8px] uppercase text-gray-500 font-bold">Volume Total O.S</p>
                     <p id="k-orc" class="text-xl font-black italic">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-emerald-500">
+                <div class="panel justify-center px-6 border-l-4 border-emerald-500 cursor-help"
+                     onmousemove="showTip(event, '<b>FATURAMENTO REAL</b><br>Orçamentos que já foram convertidos em serviço.')" onmouseout="hideTip()">
                     <p class="text-[8px] uppercase text-emerald-500 font-bold">Orçamentos Aceitos</p>
                     <p id="k-apr" class="text-xl font-black italic text-emerald-400">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-amber-500">
+                <div class="panel justify-center px-6 border-l-4 border-amber-500 cursor-help"
+                     onmousemove="showTip(event, '<b>CAPITAL EM DECISÃO</b><br>Valores em aberto aguardando retorno do cliente.')" onmouseout="hideTip()">
                     <p class="text-[8px] uppercase text-amber-500 font-bold">Capital Pendente</p>
                     <p id="k-pen" class="text-xl font-black italic text-amber-400">R$ 0,00</p>
                 </div>
-                <div class="panel justify-center px-6 border-l-4 border-[#c3002f]">
+                <div class="panel justify-center px-6 border-l-4 border-[#c3002f] cursor-help"
+                     onmousemove="showTip(event, '<b>EFICIÊNCIA COMERCIAL</b><br>Percentual de conversão: Aceitos vs Total.')" onmouseout="hideTip()">
                     <p class="text-[8px] uppercase text-red-500 font-bold">Taxa de Conversão</p>
                     <p id="k-tax" class="text-xl font-black italic">0%</p>
                 </div>
@@ -152,7 +155,6 @@
                     <span class="w-2 h-2 bg-[#c3002f] rounded-full"></span> Status de Conversão
                 </h3>
                 <div class="h-24 mb-4"><canvas id="chartPie"></canvas></div>
-                
                 <h3 class="text-[9px] font-black text-gray-500 uppercase mb-3 italic border-t border-white/5 pt-3 tracking-widest">Objeções de Venda:</h3>
                 <div id="cause-root" class="scroll-area flex-grow pr-1"></div>
             </div>
@@ -196,9 +198,9 @@
     </main>
 
     <footer class="mt-4 flex justify-between text-[9px] text-gray-700 font-mono border-t border-white/5 pt-3 italic">
-        <p>DATA SCIENTIST|SOFTWERE ESPECIALIST: SUELLY MARIA</p>
+        <p>DATA SCIENTIST| SOFTWARE ENGINEER: SUELLY MARIA</p>
         <p class="text-[#c3002f] font-black animate-pulse uppercase">● TRANSMISSÃO EM TEMPO REAL ATIVA</p>
-        <p>© 2026 RODS ANALYTICS | IMBIRIBEIRA</p>
+        <p>© 2026 RODS ANALYTICS V3.5 | IMBIRIBEIRA</p>
     </footer>
 
     <script>
@@ -206,10 +208,13 @@
         let googleData = [];
         let myChart = null, pieChart = null;
 
+        // FUNÇÃO DE TOOLTIP RESTAURADA
         function showTip(e, txt) {
             const tip = document.getElementById("master-tip");
-            tip.innerHTML = txt; tip.style.display = "block";
-            tip.style.left = (e.clientX + 15) + "px"; tip.style.top = (e.clientY + 15) + "px";
+            tip.innerHTML = txt; 
+            tip.style.display = "block";
+            tip.style.left = (e.clientX + 15) + "px"; 
+            tip.style.top = (e.clientY + 15) + "px";
         }
         function hideTip() { document.getElementById("master-tip").style.display = "none"; }
 
@@ -335,7 +340,6 @@
             document.getElementById("rank-cons").innerHTML = renderRank(stats.cons);
             document.getElementById("rank-prod").innerHTML = renderRank(stats.prod);
             
-            // Renderização das Objeções - Ajustado para mostrar mais itens e scroll suave
             document.getElementById("cause-root").innerHTML = Object.entries(stats.causes).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,v]) => `
                 <div class="mb-3 cursor-help" onmousemove="showTip(event, '<b>MOTIVO:</b> ${n}<br>Perda: R$ ${v.toLocaleString('pt-BR')}')" onmouseout="hideTip()">
                     <div class="flex justify-between text-[8px] font-bold mb-1"><span class="text-gray-400 uppercase truncate w-40">${n}</span><span class="text-white">${((v/(stats.rej||1))*100).toFixed(0)}%</span></div>
@@ -368,7 +372,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    cutout: '75%', // Aumentado um pouco para a "bola" ficar mais elegante e menor
+                    cutout: '78%', 
                     plugins: { legend: { display: false } } 
                 }
             });
